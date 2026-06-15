@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About BrainGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="about-body">
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="index.html" class="brand-logo">
+                <img src="logo.png" alt="BrainGuard AI Logo" class="logo-img" style="height: 48px; width: auto; object-fit: contain;">
+                <span class="brand-text" style="display: none;">BrainGuard<span class="brand-highlight">AI</span></span>
+            </a>
+            <nav class="site-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link active">About</a>
+                <a href="predict.html" class="nav-btn btn-primary">Launch App</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container about-container">
+        <section class="about-hero text-center">
+            <h1>Architecture & Methodology</h1>
+            <p class="about-lead">Discover the sophisticated AI models powering BrainGuard AI's clinical-grade predictions.</p>
+        </section>
+
+        <section class="about-content grid-2-col">
+            <div class="card glass-card info-card">
+                <h3>1. Convolutional Neural Network (CNN)</h3>
+                <p>Our custom baseline CNN extracts low-level spatial hierarchies from MRI scans. It acts as a fast, robust primary indicator for tumor presence, specifically optimized for edge detection in neurological imaging.</p>
+            </div>
+
+            <div class="card glass-card info-card">
+                <h3>2. ResNet50 (Transfer Learning)</h3>
+                <p>By leveraging a pre-trained ResNet50 architecture, our model benefits from deep residual learning. It effectively handles vanishing gradients, allowing it to capture complex, high-level structural anomalies with extreme precision.</p>
+            </div>
+
+            <div class="card glass-card info-card">
+                <h3>3. Vision Transformer (ViT) Hybrid</h3>
+                <p>The state-of-the-art Hybrid ResNet-ViT architecture segments the image into patches and utilizes self-attention mechanisms. It understands global context and long-range dependencies within the brain scan, a task where traditional CNNs struggle.</p>
+            </div>
+
+            <div class="card glass-card info-card highlight-card">
+                <h3>Ensemble Inference</h3>
+                <p>We combine the probabilistic outputs of all three architectures to form a highly confident consensus.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container footer-bottom text-center">
+            <p>&copy; 2026 BrainGuard AI. For demonstration and research purposes only.</p>
+        </div>
+    </footer>
+</body>
+</html>

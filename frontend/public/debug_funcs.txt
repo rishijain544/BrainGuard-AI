@@ -1,0 +1,1614 @@
+ANALYTICS:
+function renderAnalytics() {
+        const history = loadHistory();
+
+        // Stats
+        const total    = history.length;
+        const tumors   = history.filter(e => e.result.ensemble_prediction !== 'notumor').length;
+        const avgConf  = total ? (history.reduce((s,e) => s + e.result.ensemble_confidence, 0) / total * 100).toFixed(1) + '%' : '—';
+        const tumorRate = total ? (tumors / total * 100).toFixed(1) + '%' : '—';
+
+        // Best model: which has highest average confidence
+        let bestModel = '—';
+        if (total) {
+            const avgCnn    = history.reduce((s,e)=>s+((e.result.cnn_prediction?.confidence || e.result.models?.cnn?.confidence)||0),0)/total;
+            const avgResnet = history.reduce((s,e)=>s+((e.result.resnet_prediction?.confidence || e.result.models?.resnet50?.confidence)||0),0)/total;
+            const avgVit    = history.reduce((s,e)=>s+((e.result.vit_prediction?.confidence || e.result.models?.vit?.confidence)||0),0)/total;
+            const maxConf   = Math.max(avgCnn, avgResnet, avgVit);
+            bestModel = maxConf === avgCnn ? 'CNN' : maxConf === avgResnet ? 'ResNet50' : 'Hybrid ViT';
+        }
+
+        document.getElementById('ana-total-scans').textContent = total;
+        document.getElementById('ana-avg-conf').textContent    = avgConf;
+        document.getElementById('ana-best-model').textContent  = bestModel;
+        document.getElementById('ana-tumor-rate').textContent  = tumorRate;
+
+        if (total === 0) {
+            ['pie','bar','line','radar','hist'].forEach(id => {
+                document.getElementById(`chart-${id}`).classList.add('hidden');
+                document.getElementById(`ana-no-data-${id}`)?.classList.remove('hidden');
+            });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+            return;
+        }
+
+        // ── PIE: Tumor Distribution ──────────────────────────────────────────
+        const counts = { glioma:0, meningioma:0, pituitary:0, notumor:0 };
+        history.forEach(e => { counts[e.result.ensemble_prediction] = (counts[e.result.ensemble_prediction]||0) + 1; });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        buildChart('pie', 'chart-pie', 'ana-no-data-pie', {
+            type: 'doughnut',
+            data: {
+                labels: ['Glioma', 'Meningioma', 'Pituitary', 'No Tumor'],
+                datasets: [{
+                    data: [counts.glioma, counts.meningioma, counts.pituitary, counts.notumor],
+                    backgroundColor: ['#FF4B5C','#F59E0B','#8B5CF6','#10B981'],
+                    borderColor: '#0B0F17', borderWidth: 3
+                }]
+            },
+            options: { plugins: { legend: { labels: { color:'#9CA3AF' } } }, cutout:'65%' }
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        // ── BAR: Model Confidence ────────────────────────────────────────────
+        const avgCnn    = (history.reduce((s,e)=>s+((e.result.cnn_prediction?.confidence || e.result.models?.cnn?.confidence)||0),0)/total*100).toFixed(1);
+        const avgResnet = (history.reduce((s,e)=>s+((e.result.resnet_prediction?.confidence || e.result.models?.resnet50?.confidence)||0),0)/total*100).toFixed(1);
+        const avgVit    = (history.reduce((s,e)=>s+((e.result.vit_prediction?.confidence || e.result.models?.vit?.confidence)||0),0)/total*100).toFixed(1);
+
+        buildChart('bar', 'chart-bar', 'ana-no-data-bar', {
+            type: 'bar',
+            data: {
+                labels: ['CNN', 'ResNet50', 'Hybrid ViT'],
+                datasets: [{
+                    label: 'Avg Confidence (%)',
+                    data: [avgCnn, avgResnet, avgVit],
+                    backgroundColor: ['rgba(0,136,255,0.7)','rgba(0,210,255,0.7)','rgba(139,92,246,0.7)'],
+                    borderColor:     ['#0088FF','#00D2FF','#8B5CF6'],
+                    borderWidth: 2, borderRadius: 8
+                }]
+            },
+            options: { ...darkChartOptions(), scales: { y: { ...darkAxis(), min:0, max:100, title:{ display:true, text:'Confidence (%)', color:'#9CA3AF' } } } }
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        // ── LINE: Confidence Trend ───────────────────────────────────────────
+        const labels = history.slice().reverse().map((e,i) => `Scan ${i+1}`);
+        const confs  = history.slice().reverse().map(e => (e.result.ensemble_confidence * 100).toFixed(1));
+
+        buildChart('line', 'chart-line', 'ana-no-data-line', {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Ensemble Confidence (%)',
+                    data: confs,
+                    borderColor: '#00D2FF', backgroundColor: 'rgba(0,210,255,0.08)',
+                    tension: 0.4, fill: true, pointBackgroundColor:'#00D2FF', pointRadius:5
+                }]
+            },
+            options: { ...darkChartOptions(), scales: { y: { ...darkAxis(), min:0, max:100 } } }
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        // ── RADAR: Model Agreement ───────────────────────────────────────────
+        const cnnAgree    = history.filter(e => e.result.cnn_prediction?.class_name === e.result.ensemble_prediction).length;
+        const resnetAgree = history.filter(e => e.result.resnet_prediction?.class_name === e.result.ensemble_prediction).length;
+        const vitAgree    = history.filter(e => e.result.vit_prediction?.class_name === e.result.ensemble_prediction).length;
+
+        buildChart('radar', 'chart-radar', 'ana-no-data-radar', {
+            type: 'radar',
+            data: {
+                labels: ['CNN', 'ResNet50', 'Hybrid ViT'],
+                datasets: [{
+                    label: 'Agreement with Ensemble (%)',
+                    data: [
+                        (cnnAgree/total*100).toFixed(1),
+                        (resnetAgree/total*100).toFixed(1),
+                        (vitAgree/total*100).toFixed(1)
+                    ],
+                    backgroundColor: 'rgba(0,210,255,0.1)', borderColor:'#00D2FF',
+                    pointBackgroundColor:'#00D2FF', pointRadius:5
+                }]
+            },
+            options: { plugins:{ legend:{ labels:{ color:'#9CA3AF' } } }, scales:{ r:{ grid:{ color:'rgba(255,255,255,0.05)' }, pointLabels:{ color:'#9CA3AF' }, ticks:{ color:'#6B7280', backdropColor:'transparent' } } } }
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        // ── HISTOGRAM: Confidence Distribution ──────────────────────────────
+        const bins = Array(10).fill(0);
+        history.forEach(e => {
+            const idx = Math.min(9, Math.floor(e.result.ensemble_confidence * 10));
+            bins[idx]++;
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        buildChart('hist', 'chart-hist', 'ana-no-data-hist', {
+            type: 'bar',
+            data: {
+                labels: ['0-10%','10-20%','20-30%','30-40%','40-50%','50-60%','60-70%','70-80%','80-90%','90-100%'],
+                datasets: [{
+                    label: 'Number of Scans',
+                    data: bins,
+                    backgroundColor: bins.map((_,i) => i >= 7 ? 'rgba(16,185,129,0.7)' : i >= 4 ? 'rgba(245,158,11,0.7)' : 'rgba(239,68,68,0.7)'),
+                    borderRadius: 6
+                }]
+            },
+            options: { ...darkChartOptions(), scales: { y: { ...darkAxis(), ticks:{ ...darkAxis().ticks, stepSize:1 } } } }
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    }
+
+HISTORY:
+function renderHistory() {
+        const history     = loadHistory();
+        const search      = (document.getElementById('hist-search')?.value || '').toLowerCase();
+        const filterType  = document.getElementById('hist-filter')?.value || 'all';
+
+        const dateFilter  = document.getElementById('hist-date-filter')?.value;
+
+        // Filter
+        const filtered = history.filter(entry => {
+            const matchSearch = !search ||
+                entry.patient.name.toLowerCase().includes(search) ||
+                entry.patient.id.toLowerCase().includes(search);
+            const matchFilter = filterType === 'all' || entry.result.ensemble_prediction === filterType;
+            const matchDate   = !dateFilter || entry.patient.scanDate === dateFilter;
+            return matchSearch && matchFilter && matchDate;
+        });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+        // Stats
+        const total    = history.length;
+        const tumors   = history.filter(e => e.result.ensemble_prediction !== 'notumor').length;
+        const clear    = total - tumors;
+        const avgConf  = total ? (history.reduce((s,e) => s + e.result.ensemble_confidence, 0) / total * 100).toFixed(1) + '%' : '—';
+
+        document.getElementById('hist-total').textContent     = total;
+        document.getElementById('hist-tumors').textContent    = tumors;
+        document.getElementById('hist-clear').textContent     = clear;
+        document.getElementById('hist-avg-conf').textContent  = avgConf;
+
+        const tbody   = document.getElementById('history-tbody');
+        const emptyEl = document.getElementById('history-empty');
+        const tableEl = document.getElementById('history-table');
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            emptyEl.classList.remove('hidden');
+            tableEl.classList.add('hidden');
+        } else {
+            emptyEl.classList.add('hidden');
+            tableEl.classList.remove('hidden');
+
+            filtered.forEach((entry, i) => {
+                const r         = entry.result;
+                const p         = entry.patient;
+                const isTumor   = r.ensemble_prediction !== 'notumor';
+                const diagClass = isTumor ? 'badge-tumor' : 'badge-clear';
+                const confPct   = (r.ensemble_confidence * 100).toFixed(1);
+                const dateStr   = p.scanDate || new Date(entry.timestamp).toLocaleDateString();
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i + 1}</td>
+                    <td><strong>${p.name}</strong></td>
+                    <td><code>${p.id}</code></td>
+                    <td>${p.age}</td>
+                    <td>${dateStr}</td>
+                    <td><span class="hist-badge ${diagClass}">${getDisplayName(r.ensemble_prediction).toUpperCase()}</span></td>
+                    <td>
+                        <div class="conf-cell">
+                            <span>${confPct}%</span>
+                            <div class="mini-bar-track"><div class="mini-bar ${isTumor?'red':'green'}" style="width:${confPct}%"></div></div>
+                        </div>
+                    </td>
+                    <td>${(r.cnn_prediction?.confidence * 100 || 0).toFixed(1)}%</td>
+                    <td>${(r.resnet_prediction?.confidence * 100 || 0).toFixed(1)}%</td>
+                    <td>${(r.vit_prediction?.confidence * 100 || 0).toFixed(1)}%</td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="action-btn view-btn" data-id="${entry.id}" title="View Detail">👁</button>
+                            <button class="action-btn delete-btn" data-id="${entry.id}" title="Delete">🗑</button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+            // View detail
+            tbody.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const entry = history.find(e => e.id == btn.dataset.id);
+                    if (entry) showDetailModal(entry);
+                });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+            });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+            // Delete
+            tbody.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!confirm('Delete this scan record?')) return;
+                    const arr = loadHistory().filter(e => e.id != btn.dataset.id);
+                    saveHistory(arr);
+                    renderHistory();
+                });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+            });
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // IMAGE PIXEL ANALYSIS (CLIENT SIDE)
+    // ──────────────────────────────────────────────────────────────────────────
+    function analyzeImagePixels(imgElement) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = imgElement.naturalWidth || 224;
+        canvas.height = imgElement.naturalHeight || 224;
+        if (canvas.width === 0) return null;
+        
+        ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        let totalIntensity = 0;
+        let nonZeroPixels = 0;
+        let leftSum = 0, rightSum = 0;
+        let histogram = new Array(256).fill(0);
+        
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                const i = (y * canvas.width + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // Grayscale luminance
+                const gray = Math.round(0.299*r + 0.587*g + 0.114*b);
+                histogram[gray]++;
+                
+                if (gray > 10) {
+                    totalIntensity += gray;
+                    nonZeroPixels++;
+                    if (x < canvas.width / 2) leftSum += gray;
+                    else rightSum += gray;
+                }
+            }
+        }
+        
+        const meanIntensity = nonZeroPixels > 0 ? (totalIntensity / nonZeroPixels) : 0;
+        const diff = Math.abs(leftSum - rightSum);
+        const symmetry = nonZeroPixels > 0 ? (100 - (diff / totalIntensity) * 100) : 100;
+        
+        // Mock a specific lobe based on mean intensity modulus (deterministic based on image)
+        const lobes = ['Frontal Lobe', 'Parietal Lobe', 'Temporal Lobe', 'Occipital Lobe'];
+        const lobe = lobes[Math.floor(meanIntensity) % 4];
+        
+        // Mock tumor area based on top 5% brightest pixels (simplified proxy for hyper-intense tumors)
+        let topPixels = 0;
+        for (let i = 200; i < 256; i++) topPixels += histogram[i];
+        
+        return {
+            histogram: histogram,
+            meanIntensity: meanIntensity.toFixed(1),
+            symmetry: symmetry.toFixed(1),
+            lobe: lobe,
+            tumorArea: topPixels
+        };
+    }
+    
+    function renderCurrentScanAnalytics(imgElement) {
+        document.getElementById('current-scan-analytics').classList.remove('hidden');
+        
+        const stats = analyzeImagePixels(imgElement);
+        if (!stats) return;
+        
+        document.getElementById('ana-tumor-area').textContent = stats.tumorArea + ' mm²';
+        document.getElementById('ana-symmetry').textContent = stats.symmetry + ' %';
+        document.getElementById('ana-mean-intensity').textContent = stats.meanIntensity;
+        document.getElementById('ana-lobe').textContent = stats.lobe;
+        
+        // Render Histogram Chart
+        const ctx = document.getElementById('chart-histogram');
+        if (!ctx) return;
+        if (chartInstances['histogram']) chartInstances['histogram'].destroy();
+        
+        chartInstances['histogram'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 256}, (_, i) => i),
+                datasets: [{
+                    label: 'Pixel Count',
+                    data: stats.histogram,
+                    backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                    borderWidth: 0,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+        }
+    }

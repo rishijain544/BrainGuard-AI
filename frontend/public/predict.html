@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainGuard AI — AI Brain Tumor Detection Platform</title>
+    <meta name="description" content="Clinical-grade AI brain tumor classification using deep ensemble learning with Grad-CAM explainability.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+</head>
+<body>
+<div class="app-container perspective-mode">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER / NAV
+    ═══════════════════════════════════════════════════════════ -->
+    <header class="app-header">
+        <div class="header-logo">
+            <img src="logo.png" alt="BrainGuard AI Logo" style="height: 48px; width: auto; object-fit: contain;">
+            <div class="logo-text">
+                <h1>BRAIN<span class="logo-highlight">GUARD</span> <span class="logo-subtitle">AI</span></h1>
+                <p class="logo-tagline">AI Brain Tumor Detection Platform</p>
+            </div>
+        </div>
+
+        
+
+        <div class="header-controls">
+            <div id="status-badge" class="status-badge disconnected">
+                <span class="status-dot"></span>
+                <span class="status-text">DISCONNECTED</span>
+                <span id="device-info" class="device-info hidden"></span>
+            </div>
+            <button id="settings-btn" class="icon-btn" title="API Settings">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.16 9.48C21.34 9.34 21.39 9.08 21.28 8.87L19.36 5.55C19.25 5.34 18.99 5.26 18.78 5.34L16.4 6.3C15.9 5.92 15.36 5.6 14.77 5.36L14.41 2.82C14.38 2.59 14.18 2.42 13.95 2.42H10.05C9.82 2.42 9.62 2.59 9.59 2.82L9.23 5.36C8.64 5.6 8.1 5.92 7.6 6.3L5.22 5.34C5.01 5.26 4.75 5.34 4.64 5.55L2.72 8.87C2.61 9.08 2.66 9.34 2.84 9.48L4.86 11.06C4.82 11.37 4.8 11.69 4.8 12C4.8 12.31 4.82 12.63 4.86 12.94L2.84 14.52C2.66 14.66 2.61 14.92 2.72 15.13L4.64 18.45C4.75 18.66 5.01 18.74 5.22 18.66L7.6 17.7C8.1 18.08 8.64 18.4 9.23 18.64L9.59 21.18C9.62 21.41 9.82 21.58 10.05 21.58H13.95C14.18 21.58 14.38 21.41 14.41 21.18L14.77 18.64C15.36 18.4 15.9 18.08 16.4 17.7L18.78 18.66C18.99 18.74 19.25 18.66 19.36 18.45L21.28 15.13C21.39 14.92 21.34 14.66 21.16 14.52L19.14 12.94ZM12 15.6C10.01 15.6 8.4 13.99 8.4 12C8.4 10.01 10.01 8.4 12 8.4C13.99 8.4 15.6 10.01 15.6 12C15.6 13.99 13.99 15.6 12 15.6Z" fill="currentColor"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PAGE 1: DASHBOARD
+    ═══════════════════════════════════════════════════════════ -->
+    <main id="page-dashboard" class="page active">
+        <div class="app-main-grid">
+
+            <!-- LEFT COLUMN -->
+            <section class="grid-column-left">
+
+                <!-- Upload Card -->
+                <div class="dashboard-card upload-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                    <div class="card-header">
+                        <h2>MRI Scan Upload</h2>
+                        <p>Upload a T1, T2, or FLAIR brain MRI image (PNG/JPG)</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="dropzone" class="upload-dropzone">
+                            <input type="file" id="file-input" accept="image/*" class="file-hidden-input">
+                            <div class="dropzone-content">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04ZM14 13V17H10V13H7L12 8L17 13H14Z" fill="currentColor"/></svg>
+                                <p class="dropzone-prompt">Drag & drop MRI image here or <span class="browse-link">Browse</span></p>
+                                <p class="dropzone-subtext">Max size: 10MB (automatically resized to 224×224 for AI model)</p>
+                            </div>
+                            <div id="preview-container" class="preview-container hidden">
+                                <img id="image-preview" src="#" alt="MRI Scan Preview">
+                                <div id="scan-laser" class="scan-laser"></div>
+                                <button id="remove-img-btn" class="remove-btn" title="Remove Image">&times;</button>
+                            </div>
+                        </div>
+                        <button id="analyze-btn" class="primary-btn glow-effect" disabled>
+                            <span class="btn-text">Analyze Scan</span>
+                            <span class="btn-loader hidden"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Patient Info Card -->
+                <div class="dashboard-card patient-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                    <div class="card-header">
+                        <h2>Patient Information</h2>
+                        <p>Required fields to populate the clinical PDF report</p>
+                    </div>
+                    <div class="card-body">
+                        <form id="patient-form" class="patient-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="patient-name">Patient Full Name</label>
+                                    <input type="text" id="patient-name" placeholder="e.g. John Doe" required value="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label for="patient-id">Patient ID</label>
+                                    <input type="text" id="patient-id" placeholder="e.g. PAT-9832-B" required value="PAT-2026-0613">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="patient-age">Age (Years)</label>
+                                    <input type="number" id="patient-age" min="1" max="120" placeholder="e.g. 42" value="45">
+                                </div>
+                                <div class="form-group">
+                                    <label for="scan-date">Scan Date</label>
+                                    <input type="date" id="scan-date">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN -->
+            <section class="grid-column-right">
+
+                <!-- Results Placeholder -->
+                <div id="results-placeholder" class="dashboard-card results-placeholder-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                    <div class="placeholder-content">
+                        <svg viewBox="0 0 80 80" fill="none" width="80" height="80">
+                            <circle cx="40" cy="40" r="38" stroke="rgba(0,210,255,0.15)" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="28" stroke="rgba(0,210,255,0.1)" stroke-width="2"/>
+                            <path d="M30 42s2-6 10-6 10 6 10 6" stroke="rgba(0,210,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="34" cy="36" r="2" fill="rgba(0,210,255,0.4)"/>
+                            <circle cx="46" cy="36" r="2" fill="rgba(0,210,255,0.4)"/>
+                        </svg>
+                        <h3>Awaiting Diagnosis</h3>
+                        <p>Please upload a brain MRI scan image on the left and click <strong>"Analyze Scan"</strong> to execute the ensemble AI models.</p>
+                    </div>
+                </div>
+
+                <!-- Results Container (hidden until analysis) -->
+                <div id="results-container" class="hidden">
+
+                    <!-- Main Diagnosis Card -->
+                    <div class="dashboard-card diagnosis-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                        <div class="card-header">
+                            <h2>AI Ensemble Diagnosis</h2>
+                            <p>Aggregated output from CNN · ResNet50 · Hybrid ViT</p>
+                        </div>
+                        <div class="card-body diagnosis-body">
+                            <div class="diagnosis-left">
+                                <div id="diag-badge" class="diag-badge tumor">GLIOMA DETECTED</div>
+                                <svg class="radial-gauge" viewBox="0 0 100 100" width="160" height="160">
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/>
+                                    <circle id="gauge-fill" cx="50" cy="50" r="40" fill="none" stroke="url(#gauge-grad-tumor)" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                                    <text id="gauge-value" x="50" y="55" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="Outfit, sans-serif">95.0%</text>
+                                </svg>
+                                <div class="gauge-label">Ensemble Confidence</div>
+                            </div>
+                            <div class="diagnosis-right">
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Model Agreement</span>
+                                        <span id="stat-agreement" class="stat-value">87%</span>
+                                        <div class="stat-bar-track"><div id="stat-agreement-bar" class="stat-bar" style="width:87%"></div></div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Prediction Uncertainty</span>
+                                        <span id="stat-uncertainty" class="stat-value">Low (0.12)</span>
+                                        <div class="stat-bar-track"><div id="stat-uncertainty-bar" class="stat-bar" style="width:12%"></div></div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Confidence Interval (95%)</span>
+                                        <span id="stat-ci" class="stat-value">[93.0% - 97.0%]</span>
+                                    </div>
+                                </div>
+                                <div class="gradcam-viewer">
+                                    <div class="gradcam-header">
+                                        <div class="viz-toggle">
+                                            <button id="btn-gradcam" class="viz-btn active">Grad-CAM</button>
+                                            <button id="btn-segmentation" class="viz-btn">Segmentation</button>
+                                        </div>
+                                        <label class="slider-label" id="opacity-control">
+                                            <span id="opacity-pct">Opacity: 55%</span>
+                                            <input type="range" id="opacity-slider" min="0" max="100" value="55" class="opacity-slider">
+                                        </label>
+                                    </div>
+                                    <div class="gradcam-images">
+                                        <img id="view-original" src="#" alt="Original MRI" class="gradcam-img">
+                                        <img id="view-overlay" src="#" alt="Grad-CAM Overlay" class="gradcam-img overlay-img" style="opacity:0.55">
+                                        <img id="view-segmentation" src="#" alt="Segmentation Overlay" class="gradcam-img overlay-img hidden">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Comparison Card -->
+                    <div class="dashboard-card model-compare-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                        <div class="card-header">
+                            <h2>Individual Model Predictions</h2>
+                            <p>Per-model outputs from the ensemble pipeline</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="model-minicards">
+                                <div class="model-mincard">
+                                    <div class="model-badge">CNN</div>
+                                    <div id="model-cnn-pred" class="model-pred-text">GLIOMA</div>
+                                    <div id="model-cnn-conf" class="model-conf-text">82.8% confidence</div>
+                                </div>
+                                <div class="model-mincard">
+                                    <div class="model-badge resnet">ResNet50</div>
+                                    <div id="model-resnet-pred" class="model-pred-text">GLIOMA</div>
+                                    <div id="model-resnet-conf" class="model-conf-text">100.0% confidence</div>
+                                </div>
+                                <div class="model-mincard">
+                                    <div class="model-badge vit">Hybrid ViT</div>
+                                    <div id="model-vit-pred" class="model-pred-text">GLIOMA</div>
+                                    <div id="model-vit-conf" class="model-conf-text">99.6% confidence</div>
+                                </div>
+                            </div>
+                            <div class="probability-bars-section">
+                                <h3>Aggregated Probability Distribution</h3>
+                                <div class="prob-row">
+                                    <div class="prob-meta"><span class="class-title">Glioma</span><span id="prob-val-glioma" class="class-percentage">95.4%</span></div>
+                                    <div class="prob-track"><div id="prob-bar-glioma" class="prob-fill color-glioma" style="width:95.4%"></div></div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-meta"><span class="class-title">Meningioma</span><span id="prob-val-meningioma" class="class-percentage">3.2%</span></div>
+                                    <div class="prob-track"><div id="prob-bar-meningioma" class="prob-fill color-meningioma" style="width:3.2%"></div></div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-meta"><span class="class-title">Pituitary</span><span id="prob-val-pituitary" class="class-percentage">1.0%</span></div>
+                                    <div class="prob-track"><div id="prob-bar-pituitary" class="prob-fill color-pituitary" style="width:1.0%"></div></div>
+                                </div>
+                                <div class="prob-row">
+                                    <div class="prob-meta"><span class="class-title">No Tumor</span><span id="prob-val-notumor" class="class-percentage">0.4%</span></div>
+                                    <div class="prob-track"><div id="prob-bar-notumor" class="prob-fill color-notumor" style="width:0.4%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation Card -->
+                    <div class="dashboard-card recommendations-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                        <div class="card-header">
+                            <h2>Clinical Recommendation</h2>
+                            <p>Suggested clinical protocols based on prediction metrics</p>
+                        </div>
+                        <div class="card-body">
+                            <div id="rec-box" class="rec-alert-box warning-box">
+                                <h3 id="rec-title">GLIOMA DETECTED</h3>
+                                <p id="rec-action">Proceed with clinical protocols for GLIOMA.</p>
+                            </div>
+                            <div class="pdf-action-block">
+                                <p class="action-desc">Download a comprehensive, clinical-grade PDF report containing patient info, ensemble diagnostic outputs, and the Grad-CAM visualization.</p>
+                                <button id="download-pdf-btn" class="secondary-btn glow-effect-blue">
+                                    <svg class="pdf-icon" viewBox="0 0 24 24" fill="none"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04ZM17 13L12 18L7 13H10V9H14V13H17Z" fill="currentColor"/></svg>
+                                    <span class="btn-text">Generate Clinical Report PDF</span>
+                                    <span class="btn-loader hidden"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /results-container -->
+            </section>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PAGE 2: PATIENT HISTORY
+    ═══════════════════════════════════════════════════════════ -->
+    <main id="page-history" class="page hidden">
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg></div>
+                <div><div id="hist-total" class="stat-card-value">0</div><div class="stat-card-label">Total Scans</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon red"><svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2"/></svg></div>
+                <div><div id="hist-tumors" class="stat-card-value">0</div><div class="stat-card-label">Tumors Detected</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon green"><svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div><div id="hist-clear" class="stat-card-value">0</div><div class="stat-card-label">Clear Scans</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon cyan"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div><div id="hist-avg-conf" class="stat-card-value">—</div><div class="stat-card-label">Avg Confidence</div></div>
+            </div>
+        </div>
+
+        <!-- History Table Card -->
+        <div class="dashboard-card history-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+            <div class="card-header history-card-header">
+                <div>
+                    <h2>Patient Scan History</h2>
+                    <p>All scans stored in browser — click a row to view full results</p>
+                </div>
+                <div class="history-actions">
+                    <input type="text" id="hist-search" class="search-input" placeholder="Search by name or ID...">
+                    <select id="hist-filter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="glioma">Glioma</option>
+                        <option value="meningioma">Meningioma</option>
+                        <option value="pituitary">Pituitary</option>
+                        <option value="notumor">No Tumor</option>
+                    </select>
+                    <button id="export-csv-btn" class="outline-btn">Export CSV</button>
+                    <button id="clear-history-btn" class="danger-btn">Clear All</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="history-empty" class="history-empty hidden">
+                    <svg viewBox="0 0 64 64" fill="none" width="48" height="48"><rect x="8" y="4" width="48" height="56" rx="4" stroke="rgba(0,210,255,0.2)" stroke-width="2"/><path d="M16 20h32M16 28h32M16 36h20" stroke="rgba(0,210,255,0.2)" stroke-width="2" stroke-linecap="round"/></svg>
+                    <p>No scans recorded yet. Complete an analysis on the Dashboard to see history here.</p>
+                </div>
+                <div class="table-wrapper">
+                    <table id="history-table" class="history-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Patient Name</th>
+                                <th>Patient ID</th>
+                                <th>Age</th>
+                                <th>Scan Date</th>
+                                <th>Diagnosis</th>
+                                <th>Confidence</th>
+                                <th>CNN</th>
+                                <th>ResNet</th>
+                                <th>ViT</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PAGE 3: ANALYTICS
+    ═══════════════════════════════════════════════════════════ -->
+    <main id="page-analytics" class="page hidden">
+
+        <!-- Analytics Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div><div id="ana-total-scans" class="stat-card-value">0</div><div class="stat-card-label">Total Scans Analysed</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon cyan"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div><div id="ana-avg-conf" class="stat-card-value">—</div><div class="stat-card-label">Average Confidence</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon green"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div><div id="ana-best-model" class="stat-card-value">—</div><div class="stat-card-label">Best Performing Model</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon red"><svg viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2"/><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div><div id="ana-tumor-rate" class="stat-card-value">—</div><div class="stat-card-label">Tumor Detection Rate</div></div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+            <!-- Tumor Distribution Pie -->
+            <div class="dashboard-card chart-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                <div class="card-header"><h2>Tumor Type Distribution</h2><p>Breakdown of all diagnosed cases</p></div>
+                <div class="card-body chart-body">
+                    <div id="ana-no-data-pie" class="chart-no-data">No scan data yet</div>
+                    <canvas id="chart-pie" class="hidden"></canvas>
+                </div>
+            </div>
+
+            <!-- Model Accuracy Comparison Bar -->
+            <div class="dashboard-card chart-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                <div class="card-header"><h2>Model Confidence Comparison</h2><p>Average confidence per model across all scans</p></div>
+                <div class="card-body chart-body">
+                    <div id="ana-no-data-bar" class="chart-no-data">No scan data yet</div>
+                    <canvas id="chart-bar" class="hidden"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-row">
+            <!-- Confidence Trend Line -->
+            <div class="dashboard-card chart-card chart-card-wide" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                <div class="card-header"><h2>Ensemble Confidence Trend</h2><p>Confidence score over each sequential scan</p></div>
+                <div class="card-body chart-body">
+                    <div id="ana-no-data-line" class="chart-no-data">No scan data yet</div>
+                    <canvas id="chart-line" class="hidden"></canvas>
+                </div>
+            </div>
+
+            <!-- Model Agreement Radar -->
+            <div class="dashboard-card chart-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+                <div class="card-header"><h2>Model Agreement Radar</h2><p>How often each model agreed with ensemble</p></div>
+                <div class="card-body chart-body">
+                    <div id="ana-no-data-radar" class="chart-no-data">No scan data yet</div>
+                    <canvas id="chart-radar" class="hidden"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Log Table -->
+        <div class="dashboard-card" data-tilt data-tilt-max="2" data-tilt-glare data-tilt-max-glare="0.1">
+            <div class="card-header"><h2>Confidence Distribution</h2><p>Histogram of prediction confidences across all scans</p></div>
+            <div class="card-body chart-body">
+                <div id="ana-no-data-hist" class="chart-no-data">No scan data yet</div>
+                <canvas id="chart-hist" class="hidden"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="disclaimer-box">
+            <p><strong>Disclaimer:</strong> This tool is powered by AI and is designed for clinical decision support only. It does NOT constitute a final medical diagnosis. A certified radiologist must review all outputs before establishing any treatment plans.</p>
+        </div>
+        <p class="copyright">&copy; 2026 BrainGuard AI Diagnostics Inc. All rights reserved.</p>
+    </footer>
+
+</div><!-- /app-container -->
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" class="modal-wrapper hidden">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>API Configuration Settings</h2>
+            <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-help-text">Configure the address of the BrainGuard AI FastAPI backend.</p>
+            <div class="form-group">
+                <label for="api-url-input">FastAPI Backend API URL</label>
+                <input type="url" id="api-url-input" placeholder="e.g. http://localhost:8000">
+                <span class="field-hint">Leave blank to use the same domain (relative paths).</span>
+            </div>
+            <div class="api-test-status">
+                <span class="test-label">Connection Status:</span>
+                <span id="modal-test-status" class="test-badge testing">TESTING...</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="save-settings-btn" class="primary-btn">Save API Configuration</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCAN DETAIL MODAL -->
+<div id="detail-modal" class="modal-wrapper hidden">
+    <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+            <h2 id="detail-modal-title">Scan Detail</h2>
+            <button id="close-detail-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body" id="detail-modal-body"></div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

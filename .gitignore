@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+venv/
+env/
+.env
+node_modules/
+.DS_Store
+*.log
+*.keras
+*.h5
+backend/models/vit_best.pth
+backend/models/segmentation_model.pth

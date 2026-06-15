@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BrainGuard AI | Next-Generation Neurological Diagnostics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Outfit:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="landing.css" rel="stylesheet"/>
+<link href="styles.css?v=4" rel="stylesheet"/>
+<link href="favicon.svg" rel="icon" type="image/svg+xml"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.chart-body canvas {
+    width: 100% !important;
+    max-height: 280px !important;
+    object-fit: contain;
+}
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+</style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#00daf3",
+                        "on-secondary-container": "#ddcdff",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001452",
+                        "on-secondary": "#3c0090",
+                        "on-error": "#690005",
+                        "on-tertiary": "#002682",
+                        "tertiary-fixed-dim": "#b7c4ff",
+                        "secondary": "#d1bcff",
+                        "on-tertiary-container": "#0047e0",
+                        "on-background": "#e2e2e8",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface": "#111318",
+                        "surface-variant": "#333539",
+                        "on-tertiary-fixed-variant": "#0038b6",
+                        "on-secondary-fixed-variant": "#5700c9",
+                        "on-surface-variant": "#bac9cc",
+                        "surface-container": "#1e2024",
+                        "error-container": "#93000a",
+                        "primary-fixed": "#9cf0ff",
+                        "error": "#ffb4ab",
+                        "on-primary": "#00363d",
+                        "outline-variant": "#3b494c",
+                        "secondary-container": "#7000ff",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "on-primary-fixed": "#001f24",
+                        "surface-bright": "#37393e",
+                        "tertiary": "#eaebff",
+                        "background": "#111318",
+                        "on-surface": "#e2e2e8",
+                        "outline": "#849396",
+                        "on-secondary-fixed": "#23005b",
+                        "primary": "#c3f5ff",
+                        "inverse-primary": "#006875",
+                        "secondary-fixed": "#e9ddff",
+                        "inverse-surface": "#e2e2e8",
+                        "surface-container-lowest": "#0c0e12",
+                        "tertiary-container": "#c4ceff",
+                        "on-primary-fixed-variant": "#004f58",
+                        "surface-container-highest": "#333539",
+                        "tertiary-fixed": "#dde1ff",
+                        "surface-dim": "#111318",
+                        "primary-container": "#00e5ff",
+                        "on-primary-container": "#00626e",
+                        "surface-container-high": "#282a2e",
+                        "surface-container-low": "#1a1c20",
+                        "inverse-on-surface": "#2f3035"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "panel-padding": "24px",
+                        "gutter": "24px",
+                        "container-margin": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "mono-data": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Geist"],
+                        "title-md": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "mono-data": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(0, 229, 255, 0.4); }
+        }
+        .pulse-border {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .inner-glow {
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+        .scan-line {
+            background: linear-gradient(to bottom, transparent, rgba(0, 229, 255, 0.2), transparent);
+            height: 2px;
+            width: 100%;
+            position: absolute;
+            top: -2px;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        .neon-gauge {
+            filter: drop-shadow(0 0 8px #00e5ff);
+        }
+    </style>
+
+<style>
+    body.sidebar-collapsed aside {
+        width: 5rem !important;
+    }
+    body.sidebar-collapsed .sidebar-text,
+    body.sidebar-collapsed .sidebar-header-text {
+        display: none !important;
+    }
+    body.sidebar-collapsed main.ml-72,
+    body.sidebar-collapsed main.page.ml-72 {
+        margin-left: 5rem !important;
+    }
+    body.sidebar-collapsed header.fixed.top-0 {
+        width: calc(100% - 5rem) !important;
+    }
+    body.sidebar-collapsed aside nav a {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    aside, main, header, .sidebar-text, .sidebar-header-text {
+        transition: all 0.3s ease;
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-sm overflow-x-hidden"><aside class="h-screen w-72 fixed left-0 top-0 bg-surface-container-lowest/30 backdrop-blur-xl border-r border-white/10 shadow-[0_20px_50px_rgba(0,229,255,0.1)] flex flex-col py-8 px-4 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<img alt="Brain Guard AI Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7bhBdQUCMec2mMy1_f-rmOa6qQ8NHgMaLDZjDgeAKsnwKXLeVD7lLas4cPtlEdHtI3EDgA5DVve77yCkgMiMiZHiGTrwb012vSufN63Y4_xUgLjfuxgj9Xn0hCOCnm01lVzQ6rF6tFn3BWgpWf3acgEONNTYoPTtPBFNLJ3PLg1GTXv_LEXdE88A-y014j8rqLEDPubZSwQy35usLgryRaIsI_VbPyJ8vh7eIcdh36CAmTGrbYo7TjZ01dHHWqyNFKjSqre5_KCk"/>
+<div class="sidebar-header-text">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary-fixed tracking-tight">Brain Guard AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Neurology Specialist</p>
+</div>
+</div>
+<button id="new-scan-btn" class="mb-8 w-full bg-primary-container text-on-primary-container py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined">add_circle</span>
+            <span class="sidebar-text">New Scan Analysis</span>
+        </button>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary-fixed-dim border-r-2 border-primary-container font-body-sm transition-all duration-300" href="javascript:void(0)" onclick="switchPage('dashboard')">
+<span class="material-symbols-outlined">dashboard</span>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-300 font-body-sm" href="javascript:void(0)" onclick="switchPage('history')">
+<span class="material-symbols-outlined">psychology_alt</span>
+                <span class="sidebar-text">Past History</span>
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-300 font-body-sm" href="javascript:void(0)" onclick="switchPage('analytics')">
+<span class="material-symbols-outlined">biotech</span>
+                <span class="sidebar-text">Analytics</span>
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-300 font-body-sm" href="javascript:void(0)" onclick="switchPage('reports')">
+<span class="material-symbols-outlined">description</span>
+                <span class="sidebar-text">Clinic Reports</span>
+            </a>
+
+</nav>
+
+<div class="mt-auto space-y-2 border-t border-white/5 pt-6">
+    <button onclick="toggleSidebar()" class="flex w-full items-center justify-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-primary transition-all duration-300">
+        <span class="material-symbols-outlined" id="sidebar-toggle-icon">keyboard_double_arrow_left</span>
+        <span class="sidebar-text font-body-sm">Collapse Sidebar</span>
+    </button>
+</div>
+
+</aside>
+<div style="display:none;">
+<button class="nav-tab active" data-page="dashboard">Home</button>
+<button class="nav-tab" data-page="analytics">Analytics</button>
+<button class="nav-tab" data-page="history">Past History</button>
+<button class="nav-tab" data-page="about">About</button>
+<button class="nav-tab" data-page="contact">Contact Us</button>
+<button class="nav-tab" id="settings-btn">Settings</button>
+</div>
+
+<main class="page active ml-72 min-h-screen relative" id="page-dashboard">
+<!-- Top Nav Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-18rem)] z-40 bg-surface-dim/40 backdrop-blur-md border-b border-white/5 h-20 px-gutter flex justify-between items-center">
+<div class="flex items-center gap-6 flex-1 max-w-2xl">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl pl-12 pr-4 py-2.5 text-body-sm focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-on-surface-variant/50" placeholder="Search patient ID or scan number..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="pt-24 px-gutter pb-gutter">
+<!-- Breadcrumbs / Active Patient -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2 glass-panel px-4 py-2 rounded-lg">
+<span class="text-on-surface-variant font-body-sm">Analysis</span>
+<span class="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
+<span class="text-primary font-bold font-body-sm" id="ui-case-id">Case #Pending</span>
+<span class="ml-4 px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Urgent Priority</span>
+</div>
+
+</div>
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column: Image Analysis -->
+<div class="col-span-7 space-y-gutter">
+<!-- Primary Scan Analysis View -->
+<div class="glass-panel rounded-2xl overflow-hidden relative inner-glow group">
+<div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+<span class="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md rounded text-[10px] font-bold text-primary tracking-widest uppercase border border-primary/20">Active View: Axial T2W</span>
+<span class="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md rounded text-[10px] font-bold text-on-surface-variant tracking-widest uppercase border border-white/5">Layer 42/128</span>
+</div>
+<div class="relative w-full aspect-square bg-black overflow-hidden flex items-center justify-center">
+<!-- In-scan overlays -->
+<div class="absolute inset-0 border-[20px] border-black pointer-events-none z-10 opacity-50"></div>
+<div class="scan-line z-20"></div>
+<!-- Main Brain Scan Image -->
+<img alt="Active Brain Scan" class="w-full h-full object-cover opacity-90 scale-105 group-hover:scale-110 transition-transform duration-1000" id="image-preview" src="#"/>
+<!-- AI Markers -->
+<div class="absolute top-[35%] left-[45%] w-24 h-24 rounded-full border-2 border-dashed border-primary animate-spin-slow opacity-60"></div>
+<div class="absolute top-[42%] left-[52%] w-4 h-4 rounded-full bg-primary pulse-border"></div>
+<div class="absolute top-[42%] left-[52%] px-2 py-1 bg-primary text-on-primary font-mono-data text-[10px] rounded translate-x-6">PRIMARY_LESION</div>
+</div>
+<div class="p-6 bg-surface-container-low/50 border-t border-white/5 flex justify-between items-center">
+<div class="flex gap-4">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg glass-panel hover:bg-primary/20 text-on-surface transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg glass-panel hover:bg-primary/20 text-on-surface transition-colors">
+<span class="material-symbols-outlined">contrast</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg glass-panel hover:bg-primary/20 text-on-surface transition-colors">
+<span class="material-symbols-outlined">3d_rotation</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-mono-data text-on-surface-variant text-[12px]">SNR: 24.2db</span>
+<div class="w-1 h-1 rounded-full bg-outline mx-1"></div>
+<span class="font-mono-data text-on-surface-variant text-[12px]">TR: 2500ms</span>
+<div class="w-1 h-1 rounded-full bg-outline mx-1"></div>
+<span class="font-mono-data text-on-surface-variant text-[12px]">TE: 85ms</span>
+</div>
+</div>
+</div>
+<!-- Patient Details & Upload -->
+<div class="glass-panel p-6 rounded-2xl mb-4 mt-2">
+    <div class="text-primary font-bold text-[12px] uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Patient Details & Scan Upload</div>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+            <label class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest block mb-1">Patient Name</label>
+            <input type="text" id="patient-name" class="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-body-sm text-on-surface focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Enter name">
+        </div>
+        <div>
+            <label class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest block mb-1">Patient ID</label>
+            <input type="text" id="patient-id" class="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-body-sm text-on-surface focus:ring-1 focus:ring-primary/50 transition-all" placeholder="e.g. PT-12345">
+        </div>
+        <div>
+            <label class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest block mb-1">Age</label>
+            <input type="number" id="patient-age" class="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-body-sm text-on-surface focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Years">
+        </div>
+        <div>
+            <label class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest block mb-1">Scan Date</label>
+            <input type="date" id="scan-date" class="w-full bg-surface-container-highest border-none rounded-lg px-3 py-2 text-body-sm text-on-surface focus:ring-1 focus:ring-primary/50 transition-all">
+        </div>
+    </div>
+    <div class="glass-panel p-4 rounded-xl border-dashed border-primary/30 flex flex-col items-center justify-center gap-2 group hover:border-primary/80 transition-all cursor-pointer bg-primary/5" id="dropzone" onclick="document.getElementById('file-input').click()">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined">upload_file</span>
+        </div>
+        <span class="text-[12px] font-bold text-primary">Click or drag image to upload</span>
+    </div>
+    <input type="file" id="file-input" accept="image/*" class="hidden">
+</div>
+</div>
+</div>
+<!-- Right Column: Diagnosis Results -->
+<div class="col-span-5 space-y-gutter">
+<!-- AI Analysis Status Card -->
+<div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[60px]"></div>
+<div class="relative z-10 flex items-center gap-6">
+<!-- Neon Progress Gauge -->
+<div class="relative w-24 h-24">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-white/5" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary-container neon-gauge" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" id="gauge-fill" stroke="currentColor" stroke-dasharray="98.2, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-mono-data text-headline-lg text-primary leading-none" id="gauge-value">98.2</span>
+<span class="text-[10px] font-bold text-on-surface-variant">%</span>
+</div>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface font-bold mb-1">Diagnosis Confidence</h3>
+<p id="ui-diagnosis-subtitle" class="text-body-sm text-on-surface-variant">High precision neural mapping complete. Awaiting scan.</p>
+</div>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-panel p-5 rounded-xl border-l-4 border-primary shadow-lg shadow-primary/5">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tumor Volume</span>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-lg font-bold text-on-surface" id="ui-tumor-volume">--</span>
+<span class="text-body-sm text-on-surface-variant">cm³</span>
+</div>
+<div class="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-primary w-2/3 h-full"></div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-xl border-l-4 border-secondary shadow-lg shadow-secondary/5">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Malignancy Risk</span>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-lg font-bold text-secondary" id="ui-malignancy-risk">--</span>
+<span class="text-[10px] text-secondary font-bold uppercase tracking-wider" id="ui-malignancy-grade"></span>
+</div>
+<div class="mt-3 flex gap-1">
+<div class="h-1 flex-1 bg-secondary rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/10 rounded-full"></div>
+<!-- Explicit Model Breakdowns -->
+<div class="grid grid-cols-3 gap-4 mt-4">
+    <div class="glass-panel p-4 rounded-xl border-t-2 border-primary/50 text-center shadow-lg">
+        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">CNN Model</span>
+        <div class="text-xl font-bold text-on-surface mt-1" id="ui-cnn-conf">--%</div>
+        <div class="text-[10px] text-primary mt-1 uppercase" id="ui-cnn-pred">Pending</div>
+    </div>
+    <div class="glass-panel p-4 rounded-xl border-t-2 border-secondary/50 text-center shadow-lg">
+        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">ResNet50</span>
+        <div class="text-xl font-bold text-on-surface mt-1" id="ui-resnet-conf">--%</div>
+        <div class="text-[10px] text-secondary mt-1 uppercase" id="ui-resnet-pred">Pending</div>
+    </div>
+    <div class="glass-panel p-4 rounded-xl border-t-2 border-[#ff00a0]/50 text-center shadow-lg">
+        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Hybrid ViT</span>
+        <div class="text-xl font-bold text-on-surface mt-1" id="ui-vit-conf">--%</div>
+        <div class="text-[10px] text-[#ff00a0] mt-1 uppercase" id="ui-vit-pred">Pending</div>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
+<!-- Detailed Findings List -->
+<div class="glass-panel rounded-2xl overflow-hidden">
+<div class="px-6 py-4 bg-white/5 border-b border-white/5 flex justify-between items-center">
+<h3 class="font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                                Detailed Neural Metrics
+                            </h3>
+<span class="material-symbols-outlined text-on-surface-variant">info</span>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-on-surface-variant">Anatomical Location</span>
+<span class="text-on-surface font-mono-data px-2 py-1 bg-white/5 rounded text-[12px]" id="ui-location">--</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-on-surface-variant">Contrast Enhancement</span>
+<span class="text-on-surface font-mono-data px-2 py-1 bg-white/5 rounded text-[12px]" id="ui-contrast">--</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-on-surface-variant">Perifocal Edema</span>
+<span class="text-on-surface font-mono-data px-2 py-1 bg-white/5 rounded text-[12px]" id="ui-edema">--</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<span class="text-on-surface-variant">Vascular Encroachment</span>
+<span class="text-on-error font-mono-data px-2 py-1 bg-error/10 rounded text-[12px]" id="ui-vascular">--</span>
+</div>
+</div>
+</div>
+<!-- AI Suggested Next Steps -->
+<div class="glass-panel p-6 rounded-2xl border border-primary/20 relative group hover:border-primary/50 transition-all">
+<h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4">Recommended Protocol</h4>
+<ul class="space-y-4">
+<li class="flex gap-4 items-start">
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary text-[14px] shrink-0 mt-0.5">1</div>
+<p class="text-body-sm text-on-surface">Schedule MR Spectroscopy for metabolic confirmation of low-grade glioma profile.</p>
+</li>
+<li class="flex gap-4 items-start">
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary text-[14px] shrink-0 mt-0.5">2</div>
+<p class="text-body-sm text-on-surface">Consult with Neurosurgical Oncology for potential resection margins planning.</p>
+</li>
+</ul>
+<button class="mt-6 w-full py-3 rounded-xl border border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all active:scale-95" id="analyze-btn"><span class="btn-text">Scan & Analyze</span><span class="btn-loader hidden"> 🔄</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div id="legacy-dashboard-hidden" style="display:none;">
+<input accept="image/*" id="file-input" type="file"/>
+<div id="preview-container"></div>
+<button id="remove-img-btn"></button>
+<div id="status-badge"><span class="status-text"></span><span id="device-info"></span></div>
+<div id="results-placeholder"></div>
+<div id="results-container"></div>
+<div id="diag-badge"></div>
+<div id="stat-agreement"></div><div id="stat-agreement-bar"></div>
+<div id="stat-uncertainty"></div><div id="stat-uncertainty-bar"></div>
+<div id="stat-ci"></div>
+<button id="btn-gradcam"></button><button id="btn-segmentation"></button>
+<input id="opacity-slider" type="range"/><span id="opacity-pct"></span>
+<img id="view-original" src="#"/><img id="view-overlay" src="#"/><img id="view-segmentation" src="#"/>
+<div id="model-cnn-pred"></div><div id="model-cnn-conf"></div>
+<div id="model-resnet-pred"></div><div id="model-resnet-conf"></div>
+<div id="model-vit-pred"></div><div id="model-vit-conf"></div>
+<div id="rec-box"></div><h3 id="rec-title"></h3><p id="rec-action"></p>
+<button id="download-pdf-btn"></button>
+<form id="patient-form">
+<input id="patient-name" type="text"/>
+<input id="patient-id" type="text"/>
+<input id="patient-age" type="number"/>
+<input id="scan-date" type="date"/>
+</form>
+</div>
+</main>
+<main class="page hidden pt-24 px-gutter ml-72" id="page-analytics">
+    <div class="mb-8">
+        <h2 class="text-headline-lg font-bold text-primary-fixed tracking-tight">Analytics Dashboard</h2>
+        <p class="text-body-sm text-on-surface-variant">Global performance metrics across all scans</p>
+    </div>
+
+    <!-- Analytics Stats Row -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-primary">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Scans</div>
+            <div class="text-headline-lg font-bold text-on-surface" id="ana-total-scans">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-error">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Tumors Detected</div>
+            <div class="text-headline-lg font-bold text-error" id="ana-tumor-count">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-green-400">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">No Tumor Cases</div>
+            <div class="text-headline-lg font-bold text-green-400" id="ana-clear-count">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-secondary">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Average Confidence</div>
+            <div class="text-headline-lg font-bold text-secondary" id="ana-avg-conf">—</div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="glass-panel p-6 rounded-2xl">
+            <h3 class="font-bold text-on-surface mb-4">Tumor Distribution</h3>
+            <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="text-on-surface-variant hidden" id="ana-no-data-pie">No scan data available</div>
+                <canvas id="chart-pie"></canvas>
+            </div>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl">
+            <h3 class="font-bold text-on-surface mb-4">Scan Activity Trend</h3>
+            <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="text-on-surface-variant hidden" id="ana-no-data-line">No scan data available</div>
+                <canvas id="chart-line"></canvas>
+            </div>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl">
+            <h3 class="font-bold text-on-surface mb-4">Model Performance</h3>
+            <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="text-on-surface-variant hidden" id="ana-no-data-bar">No scan data available</div>
+                <canvas id="chart-bar"></canvas>
+            </div>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl">
+            <h3 class="font-bold text-on-surface mb-4">Confidence Trend</h3>
+            <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="text-on-surface-variant hidden" id="ana-no-data-trend">No scan data available</div>
+                <canvas id="chart-trend"></canvas>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Current Scan Advanced Analytics -->
+    <div class="mb-4 mt-8 flex justify-between items-center">
+        <h3 class="font-bold text-on-surface text-title-md">Current Scan Advanced Analytics</h3>
+        <span class="text-[12px] font-mono-data text-primary px-3 py-1 bg-primary/10 rounded-full border border-primary/20" id="adv-scan-id">No Scan Active</span>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
+        <!-- 1. Pixel Intensity Histogram -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">1. Pixel Intensity Histogram</h4>
+            <div class="relative h-48 w-full flex items-center justify-center">
+                <canvas id="adv-chart-histogram"></canvas>
+            </div>
+            <p class="text-[10px] text-on-surface-variant mt-2 text-center">Grayscale distribution (Dark vs Bright regions)</p>
+        </div>
+
+        <!-- 2. Brain Symmetry Analysis -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">2. Brain Symmetry</h4>
+            <div class="flex flex-col items-center justify-center h-48 gap-4">
+                <div class="w-full flex justify-between text-[10px] font-bold text-on-surface">
+                    <span>Left Hemisphere</span>
+                    <span>Right Hemisphere</span>
+                </div>
+                <div class="w-full h-4 bg-surface-container-highest rounded-full overflow-hidden flex">
+                    <div id="adv-sym-left" class="h-full bg-primary transition-all duration-1000" style="width: 50%"></div>
+                    <div id="adv-sym-right" class="h-full bg-secondary transition-all duration-1000" style="width: 50%"></div>
+                </div>
+                <div class="text-xl font-bold text-on-surface" id="adv-sym-score">--% Match</div>
+                <p class="text-[10px] text-error hidden" id="adv-sym-warning">Asymmetry Detected</p>
+            </div>
+        </div>
+
+        <!-- 4. Scan Quality Score -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">4. Scan Quality</h4>
+            <div class="flex flex-col items-center justify-center h-48 relative">
+                <div class="relative w-32 h-16 overflow-hidden">
+                    <div class="absolute top-0 left-0 w-32 h-32 rounded-full border-[12px] border-surface-container-highest"></div>
+                    <div id="adv-quality-gauge" class="absolute top-0 left-0 w-32 h-32 rounded-full border-[12px] border-primary border-b-transparent border-r-transparent -rotate-45 transition-transform duration-1000"></div>
+                </div>
+                <div class="absolute bottom-6 flex flex-col items-center">
+                    <span class="text-3xl font-bold text-on-surface" id="adv-quality-score">--</span>
+                    <span class="text-[12px] font-bold text-on-surface-variant uppercase" id="adv-quality-label">Pending</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Tumor Heatzone Map -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">3. Tumor Heatzone Map</h4>
+            <div class="grid grid-cols-2 grid-rows-2 gap-1 h-48 bg-surface-container-highest p-1 rounded-xl">
+                <div class="rounded-lg flex flex-col items-center justify-center transition-colors duration-1000" id="adv-hz-tl">
+                    <span class="text-[10px] text-on-surface-variant">Top-Left</span>
+                    <span class="font-bold text-on-surface" id="adv-hz-tl-val">--%</span>
+                </div>
+                <div class="rounded-lg flex flex-col items-center justify-center transition-colors duration-1000" id="adv-hz-tr">
+                    <span class="text-[10px] text-on-surface-variant">Top-Right</span>
+                    <span class="font-bold text-on-surface" id="adv-hz-tr-val">--%</span>
+                </div>
+                <div class="rounded-lg flex flex-col items-center justify-center transition-colors duration-1000" id="adv-hz-bl">
+                    <span class="text-[10px] text-on-surface-variant">Bottom-Left</span>
+                    <span class="font-bold text-on-surface" id="adv-hz-bl-val">--%</span>
+                </div>
+                <div class="rounded-lg flex flex-col items-center justify-center transition-colors duration-1000" id="adv-hz-br">
+                    <span class="text-[10px] text-on-surface-variant">Bottom-Right</span>
+                    <span class="font-bold text-on-surface" id="adv-hz-br-val">--%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Lobe Detection Indicator -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">5. Lobe Detection</h4>
+            <div class="flex flex-col items-center justify-center h-48 gap-4">
+                <span class="material-symbols-outlined text-6xl text-primary/30" id="adv-lobe-icon">psychology</span>
+                <div class="text-center">
+                    <div class="text-[12px] text-on-surface-variant uppercase mb-1">Estimated Affected Region</div>
+                    <div class="text-xl font-bold text-primary" id="adv-lobe-name">Pending Scan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Confidence Breakdown Radar -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-2">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">6. Confidence Breakdown Radar</h4>
+            <div class="relative h-48 w-full flex items-center justify-center">
+                <canvas id="adv-chart-radar"></canvas>
+            </div>
+        </div>
+
+        <!-- 7. Risk Score Meter -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">7. Clinical Risk Score</h4>
+            <div class="flex flex-col items-center justify-center h-48 relative">
+                <div class="relative w-32 h-32 rounded-full border-[8px] border-surface-container-highest flex items-center justify-center shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                    <div class="absolute inset-0 rounded-full border-[8px] border-error border-l-transparent border-t-transparent -rotate-45 transition-transform duration-1000" id="adv-risk-ring"></div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-4xl font-bold text-on-surface" id="adv-risk-score">--</span>
+                        <span class="text-[10px] font-bold text-on-surface-variant uppercase mt-1">Score</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Before/After Timeline -->
+        <div class="glass-panel p-6 rounded-2xl lg:col-span-3">
+            <h4 class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">8. Patient Confidence Timeline</h4>
+            <div class="relative h-48 w-full flex items-center justify-center">
+                <canvas id="adv-chart-timeline"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="glass-panel p-6 rounded-2xl mb-8">
+        <h3 class="font-bold text-on-surface mb-4">Recent Predictions</h3>
+        <div class="w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="ana-recent-table">
+                <thead>
+                    <tr class="border-b border-white/10 text-on-surface-variant text-[12px] uppercase tracking-wider">
+                        <th class="py-3 px-4 font-bold">Patient</th>
+                        <th class="py-3 px-4 font-bold">Diagnosis</th>
+                        <th class="py-3 px-4 font-bold">Confidence</th>
+                        <th class="py-3 px-4 font-bold">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="ana-recent-tbody" class="text-body-sm text-on-surface">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+            <div class="text-center py-8 text-on-surface-variant hidden" id="ana-recent-empty">No recent predictions found.</div>
+        </div>
+    </div>
+</main>
+<main class="page hidden pt-24 px-gutter ml-72" id="page-history">
+    <div class="mb-8">
+        <h2 class="text-headline-lg font-bold text-primary-fixed tracking-tight">Patient History</h2>
+        <p class="text-body-sm text-on-surface-variant">Archived neurological scan records</p>
+    </div>
+
+    <!-- History Stats Row -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-primary">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Scans</div>
+            <div class="text-headline-lg font-bold text-on-surface" id="hist-total">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-error">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Tumors Detected</div>
+            <div class="text-headline-lg font-bold text-error" id="hist-tumors">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-green-400">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">No Tumor Cases</div>
+            <div class="text-headline-lg font-bold text-green-400" id="hist-clear">0</div>
+        </div>
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-secondary">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Average Confidence</div>
+            <div class="text-headline-lg font-bold text-secondary" id="hist-avg-conf">—</div>
+        </div>
+    </div>
+
+    <!-- History Table Container -->
+    <div class="glass-panel p-6 rounded-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex gap-4 items-center">
+                <input type="text" id="hist-search" placeholder="Search Patient Name or ID..." class="bg-surface-container border-none rounded-lg px-4 py-2 text-body-sm focus:ring-1 focus:ring-primary w-64">
+                <select id="hist-filter" class="bg-surface-container border-none rounded-lg px-4 py-2 text-body-sm focus:ring-1 focus:ring-primary">
+                    <option value="all">All Diagnoses</option>
+                    <option value="glioma">Glioma</option>
+                    <option value="meningioma">Meningioma</option>
+                    <option value="pituitary">Pituitary</option>
+                    <option value="notumor">No Tumor</option>
+                </select>
+                <select id="hist-sort" class="bg-surface-container border-none rounded-lg px-4 py-2 text-body-sm focus:ring-1 focus:ring-primary">
+                    <option value="newest">Sort by Date (Newest)</option>
+                    <option value="oldest">Sort by Date (Oldest)</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button id="export-csv-btn" class="bg-surface-container hover:bg-white/10 text-on-surface px-4 py-2 rounded-lg text-body-sm transition-colors border border-white/10">Export CSV</button>
+                <button id="clear-history-btn" class="bg-error/10 hover:bg-error/20 text-error px-4 py-2 rounded-lg text-body-sm transition-colors border border-error/20">Clear All</button>
+            </div>
+        </div>
+
+        <div class="w-full overflow-x-auto">
+            <div class="text-center py-12 text-on-surface-variant hidden" id="history-empty">
+                No patient records found. Complete a scan analysis to populate history.
+            </div>
+            <table class="w-full text-left border-collapse" id="history-table">
+                <thead>
+                    <tr class="border-b border-white/10 text-on-surface-variant text-[12px] uppercase tracking-wider">
+                        <th class="py-3 px-4 font-bold">Patient Name</th>
+                        <th class="py-3 px-4 font-bold">Patient ID</th>
+                        <th class="py-3 px-4 font-bold">Prediction</th>
+                        <th class="py-3 px-4 font-bold">Confidence</th>
+                        <th class="py-3 px-4 font-bold">Date</th>
+                        <th class="py-3 px-4 font-bold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="history-tbody" class="text-body-sm text-on-surface">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<main class="page hidden ml-72" id="page-reports">
+    <div class="pt-24 px-gutter pb-gutter">
+        <div class="glass-panel p-10 rounded-2xl max-w-3xl mx-auto text-center mt-10">
+            <span class="material-symbols-outlined text-[64px] text-primary mb-4">picture_as_pdf</span>
+            <h2 class="text-headline-lg font-bold text-on-surface mb-2">Clinical Report Generator</h2>
+            <p class="text-body-lg text-on-surface-variant mb-8">Download a comprehensive, verifiable PDF report for the currently active scan analysis.</p>
+            
+            <button id="ui-export-btn-big" class="bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-lg shadow-primary/30 mx-auto w-full max-w-md">
+                <span class="material-symbols-outlined">file_download</span>
+                Generate Clinical PDF Report
+            </button>
+        </div>
+    </div>
+</main>
+<main class="page hidden dashboard-wrapper ml-72" id="page-about">
+<div class="header-glass mb-4 p-6 glass-panel 3d-hover">
+<h2 class="text-3xl font-bold text-white mb-2" style="text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);">About Brain Guard AI</h2>
+<p class="text-gray-400">Discover the cutting-edge technology behind our 3D medical AI diagnostics.</p>
+</div>
+<div class="grid" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+<div class="card glass-panel 3d-hover">
+<h3 class="text-xl font-bold mb-4 neon-text">Our Mission</h3>
+<p class="text-gray-300 leading-relaxed mb-4">
+                    Brain Guard AI is designed to empower medical professionals with lightning-fast, highly accurate tumor detection capabilities. By utilizing a state-of-the-art ensemble of convolutional neural networks and vision transformers, we drastically reduce the time it takes to analyze MRI scans.
+                </p>
+<p class="text-gray-300 leading-relaxed">
+                    Our platform ensures that no detail goes unnoticed, providing robust confidence scores and high-tech visualizations to support clinical decision-making.
+                </p>
+</div>
+<div class="card glass-panel 3d-hover" style="display: flex; align-items: center; justify-content: center; padding: 0; overflow: hidden; position: relative;">
+<img alt="3D Brain Scan AI" class="about-image" src="./assets/brain_scan_3d.png" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;"/>
+<div class="image-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent);"></div>
+</div>
+</div>
+<div class="card glass-panel 3d-hover">
+<h3 class="text-xl font-bold mb-4 neon-text">How It Works</h3>
+<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 24px;">
+<div class="step-card glass-panel">
+<div class="step-icon">1</div>
+<h4 class="font-bold text-white mb-2">Upload Scan</h4>
+<p class="text-gray-400 text-sm">Upload standard T1, T2, or FLAIR MRI images directly into our secure 3D interface.</p>
+</div>
+<div class="step-card glass-panel">
+<div class="step-icon">2</div>
+<h4 class="font-bold text-white mb-2">AI Processing</h4>
+<p class="text-gray-400 text-sm">The image is processed through our CNN, ResNet50, and Hybrid ViT ensemble models simultaneously.</p>
+</div>
+<div class="step-card glass-panel">
+<div class="step-icon">3</div>
+<h4 class="font-bold text-white mb-2">3D Analytics</h4>
+<p class="text-gray-400 text-sm">Receive a unified diagnosis, confidence scores, and tumor detection metrics instantly on your dashboard.</p>
+</div>
+</div>
+</div>
+</main>
+<main class="page hidden dashboard-wrapper ml-72" id="page-contact">
+<div class="container" style="max-width: 800px; padding: 40px 20px;">
+<div class="dashboard-card" style="text-align: center; padding: 40px;">
+<h1 style="font-family: var(--font-header); margin-bottom: 16px;">Contact Us</h1>
+<p style="color: var(--text-secondary); margin-bottom: 32px;">Reach out to the BrainGuard AI team for support or inquiries.</p>
+<form class="patient-form" style="max-width: 500px; margin: 0 auto; text-align: left;">
+<div class="form-group" style="margin-bottom: 16px;">
+<label>Your Name</label>
+<input placeholder="Dr. Jane Smith" type="text"/>
+</div>
+<div class="form-group" style="margin-bottom: 16px;">
+<label>Email Address</label>
+<input placeholder="jane.smith@hospital.org" type="email"/>
+</div>
+<div class="form-group" style="margin-bottom: 24px;">
+<label>Message</label>
+<textarea rows="4" style="background: #09090b; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; color: var(--text-primary); font-family: var(--font-body); resize: vertical;"></textarea>
+</div>
+<button class="primary-btn glow-effect" style="width: 100%;" type="button">Send Message</button>
+</form>
+</div>
+</div>
+</main>
+</div>
+<!-- FOOTER -->
+<footer class="site-footer">
+<div class="container footer-bottom text-center">
+<p>© 2026 BrainGuard AI. For demonstration and research purposes only.</p>
+</div>
+</footer>
+<!-- SETTINGS MODAL -->
+<div class="modal-wrapper hidden" id="settings-modal">
+<div class="modal-card">
+<div class="modal-header">
+<h2>API Configuration Settings</h2>
+<button class="close-btn" id="close-modal-btn">×</button>
+</div>
+<!-- SCAN DETAIL MODAL -->
+<div class="modal-wrapper hidden" id="detail-modal">
+<div class="modal-card modal-card-wide">
+<div class="modal-header">
+<h2 id="detail-modal-title">Scan Detail</h2>
+<button class="close-btn" id="close-detail-btn">×</button>
+</div>
+<!-- Settings Modal -->
+<div class="modal-overlay hidden" id="settings-modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>Backend Connection Settings</h3>
+<button class="icon-btn" id="close-modal-btn">✖</button>
+</div>
+<div class="modal-body">
+<div class="form-group">
+<label>API Server URL</label>
+<input id="api-url-input" placeholder="e.g., http://localhost:8000" type="text" value="http://localhost:8000"/>
+</div>
+<div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+<span class="test-badge" id="modal-test-status">UNTESTED</span>
+<button class="primary-btn" id="save-settings-btn">Save &amp; Reconnect</button>
+</div>
+</div>
+</div>
+</div>
+<script src="app.js"></script>
+<!-- Scan Details Modal -->
+<div class="modal hidden" id="scan-details-modal">
+<div class="modal-content" style="max-width: 800px;">
+<div class="modal-header">
+<h2>Scan Details</h2>
+<button class="icon-btn" id="close-details-btn"><svg fill="none" style="width:24px;height:24px;" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2"></path></svg></button>
+</div>
+<div class="modal-body" id="scan-details-body">
+<!-- Content injected via JS -->
+</div>
+</div>
+</div>
+</div></div></div></div>
+    <script>
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            const target = document.getElementById('page-' + pageId);
+            if(target) {
+                target.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
