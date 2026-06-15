@@ -2,38 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "public/**",
+      "src": "frontend/public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/predict",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/health",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/models",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/info",
-      "dest": "api/index.py"
-    },
-    {
       "src": "/(.*)",
-      "dest": "public/$1"
+      "dest": "frontend/public/$1"
     }
   ]
 }
