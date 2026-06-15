@@ -1,4 +1,6 @@
 <div align="center">
+  <img src="frontend/public/assets/brainguard_logo.png" alt="BrainGuard AI Logo" width="150"/>
+  
   # BrainGuard AI 🧠
   
   **Advanced Deep Learning MRI Analysis & Clinical Diagnosis Platform**
