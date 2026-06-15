@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/assets/brainguard_logo.png" alt="BrainGuard AI Logo" width="150"/>
+  <img src="frontend/public/assets/brainguard_logo.png" alt="BrainGuard AI Logo" width="180"/>
   
   # BrainGuard AI 🧠
   
@@ -14,49 +14,79 @@
 
 ---
 
-## 🌟 Overview
+## 🌟 Executive Summary
 
-**BrainGuard AI** is a state-of-the-art medical imaging application designed to assist medical professionals in detecting, classifying, and analyzing brain tumors from MRI scans. 
+**BrainGuard AI** is a comprehensive, end-to-end medical imaging platform engineered to assist clinical professionals in diagnosing brain tumors from Magnetic Resonance Imaging (MRI) scans. 
 
-By leveraging an ensemble of deep learning models (ResNet50, Vision Transformers, and custom CNNs), BrainGuard provides extremely high-accuracy predictions. More than just a simple classifier, it features a comprehensive suite of **Advanced Clinical Analytics** including Grad-CAM heatzones, tumour volume estimation, pixel intensity histograms, and automated PDF report generation.
+Moving beyond simple classification, this project incorporates an extensive data science lifecycle—from initial **Exploratory Data Analysis (EDA)** to the deployment of a highly accurate **Ensemble Deep Learning** model utilizing CNNs, ResNets, and Vision Transformers (ViT). 
 
-👉 **[Try the Live Application Here](https://brain-guard-ai.vercel.app/)**
+Furthermore, the platform provides rich Explainable AI (XAI) features, ensuring that predictions are transparent and visually verifiable by medical staff.
 
----
-
-## ✨ Key Features
-
-- 🔬 **Ensemble Deep Learning:** Combines multiple neural network architectures (ViT, ResNet, CNN) for highly robust tumor classification (Glioma, Meningioma, Pituitary, or No Tumor).
-- 🗺️ **Explainable AI (Grad-CAM):** Generates heatmaps highlighting the exact regions of the MRI that led to the model's prediction.
-- 📊 **Advanced Analytics Dashboard:**
-  - **Pixel Intensity Histogram:** Analyzes the grayscale distribution of the MRI.
-  - **Brain Symmetry Analysis:** Detects structural asymmetry often caused by tumors.
-  - **Tumor Heatzone Map:** Calculates highest activation quadrants.
-  - **Lobe Detection Indicator:** Estimates affected brain lobes based on spatial activation.
-- 📄 **Clinical PDF Reports:** Automatically generates professional, downloadable medical reports containing patient data, scan metrics, and the Grad-CAM visualization.
-- ⚡ **Lightning Fast UI:** A premium, fully responsive frontend built with modern CSS and Chart.js animations.
+👉 **[Experience the Live Application Here](https://brain-guard-ai.vercel.app/)**
 
 ---
 
-## 🛠️ Technology Stack
+## 📊 Exploratory Data Analysis (EDA)
+
+Before modeling, an exhaustive EDA phase was conducted to understand the underlying distributions and challenges within the MRI dataset. Key findings and preprocessing steps included:
+
+- **Class Distribution Analysis:** Evaluated the balance between Glioma, Meningioma, Pituitary, and No Tumor classes to prevent model bias.
+- **Image Standardization:** Addressed variations in MRI contrast, brightness, and resolution by applying histogram equalization and resizing all images to a uniform tensor shape.
+- **Augmentation Strategies:** Implemented spatial transformations (rotations, flips) and color jitter to artificially expand the dataset and improve the model's ability to generalize to new patient scans.
+- **Pixel Intensity Profiling:** Analyzed the grayscale distribution to establish thresholds separating dense tumor mass from normal brain tissue.
+
+---
+
+## 🧠 Deep Learning Architectures
+
+To achieve near-perfect clinical accuracy, BrainGuard AI does not rely on a single algorithm. Instead, it utilizes an ensemble of cutting-edge computer vision architectures:
+
+### 1. Custom Convolutional Neural Network (CNN)
+A highly optimized, lightweight CNN built from scratch to act as the baseline feature extractor. It captures local spatial patterns and edges (like the distinct boundaries of a meningioma) rapidly and effectively.
+
+### 2. ResNet (Residual Networks)
+Leveraging Transfer Learning, a pre-trained **ResNet50** model was fine-tuned on our MRI dataset. The residual skip connections allow the network to learn extremely deep hierarchical features without suffering from the vanishing gradient problem. It excels at identifying deep-tissue structural anomalies.
+
+### 3. Vision Transformer (ViT)
+Transformers are revolutionizing computer vision. The **ViT** model divides the MRI scan into sequential patches, utilizing self-attention mechanisms to understand the *global context* of the brain. While CNNs focus on local textures, the ViT understands the relationship between distant regions of the brain, leading to unmatched predictive robustness.
+
+### 4. Ensemble Prediction Engine
+The final diagnosis is computed through a weighted ensemble of the CNN, ResNet, and ViT models. By combining their diverse "perspectives" (local features vs. global attention), the application achieves exceptional diagnostic confidence.
+
+---
+
+## ✨ Clinical Explainability & Advanced Analytics
+
+Medical AI must be transparent. BrainGuard AI provides medical professionals with deep insights into *why* a prediction was made:
+
+- 🗺️ **Grad-CAM (Gradient-weighted Class Activation Mapping):** Generates a colored heatmap over the MRI, highlighting the exact pixels the neural network focused on to make its diagnosis.
+- 📉 **Pixel Intensity Histogram:** Maps the grayscale values of the scan. Tumors often present as anomalous peaks in brightness or darkness, which are instantly visible here.
+- ⚖️ **Brain Symmetry Analysis:** Healthy brains exhibit bilateral symmetry. The app algorithmically compares the left and right hemispheres to detect physical distortions caused by growing masses.
+- 📍 **Lobe Detection & Quadrant Heatzone:** Estimates which quadrant (and corresponding brain lobe: Frontal, Parietal, Temporal, Occipital) is most affected by the mass.
+- 📄 **Automated PDF Clinical Reports:** With one click, generates a professional medical report containing the patient's ID, the AI's diagnosis, confidence scores, and the Grad-CAM visualization for patient records.
+
+---
+
+## 🛠️ Technology Stack & Deployment
 
 **Frontend:**
-- HTML5, Vanilla JavaScript, CSS3
-- Chart.js (for dynamic analytics visualization)
-- Vercel (Hosting)
+- HTML5, Vanilla JavaScript, CSS3 (Glassmorphism & Medical UI aesthetics)
+- Chart.js (Dynamic analytical visualizations)
+- **Vercel** (Global Edge CDN Hosting)
 
 **Backend:**
 - Python 3.10+
-- FastAPI (High-performance API routing)
-- PyTorch & Torchvision (Deep Learning framework)
-- OpenCV & Pillow (Image processing)
-- Docker (Containerization for production deployment)
+- FastAPI (High-performance asynchronous API)
+- PyTorch & Torchvision (Deep Learning inference)
+- OpenCV, Pillow, Scikit-learn (Image processing and data handling)
+- **Docker** (Containerized for consistent production environments)
+- **Railway / Render** (Cloud execution of the PyTorch ML containers)
 
 ---
 
 ## 🚀 Running Locally
 
-If you wish to run BrainGuard AI on your local machine:
+Want to run the complete data pipeline and web application on your own machine?
 
 ### 1. Clone the Repository
 ```bash
@@ -64,7 +94,7 @@ git clone https://github.com/rishijain544/BrainGuard-AI.git
 cd BrainGuard-AI
 ```
 
-### 2. Setup the Backend
+### 2. Setup the Environment
 You will need Python 3.10+ installed.
 ```bash
 # Create a virtual environment
@@ -76,36 +106,25 @@ venv\Scripts\activate
 # Activate it (Mac/Linux)
 source venv/bin/activate
 
-# Install dependencies
+# Install all backend dependencies
 pip install -r backend/requirements.txt
 ```
 
-### 3. Add Pre-trained Models
-Ensure you place your pre-trained `.pth` weight files (like `cnn_best.pth`, `resnet_best.pth`, etc.) inside the `backend/models/` directory. *(Note: These are excluded from GitHub due to file size limits).*
+### 3. Add Pre-trained Weights
+Ensure you place your pre-trained PyTorch weight files (`cnn_best.pth`, `resnet_best.pth`, `vit_best.pth`) inside the `backend/models/` directory. *(Note: These are excluded from GitHub by default due to standard file size limits).*
 
 ### 4. Start the Application
-You can start both the frontend and backend simultaneously using the provided script:
-```bash
-python run_server.py
-```
-Alternatively, run the FastAPI server directly:
+Run the backend API:
 ```bash
 uvicorn backend.fastapi_backend:app --host 0.0.0.0 --port 8000
 ```
-
----
-
-## 🌐 Deployment Architecture
-
-The application is architected for a decoupled deployment:
-- **Frontend** is statically hosted on **Vercel** (`https://brain-guard-ai.vercel.app/`).
-- **Backend** is containerized via `Dockerfile` and hosted on a cloud container platform (e.g., Railway, Render) to handle the heavy PyTorch ML models.
+Then, open `frontend/index.html` in any modern web browser to access the UI.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/rishijain544/BrainGuard-AI/issues).
+Contributions to improve accuracy, speed, or UX are highly encouraged! Feel free to fork the repository and submit a pull request, or check the [issues page](https://github.com/rishijain544/BrainGuard-AI/issues).
 
 ---
 
