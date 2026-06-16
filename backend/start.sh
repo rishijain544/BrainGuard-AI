@@ -7,5 +7,5 @@ echo "=== BrainGuard AI Startup ==="
 echo "Checking model files..."
 python download_models.py
 
-echo "Starting FastAPI server on port ${PORT:-8000}..."
-exec uvicorn fastapi_backend:app --host 0.0.0.0 --port ${PORT:-8000}
+echo "Starting FastAPI server on port 8080..."
+exec uvicorn fastapi_backend:app --host 0.0.0.0 --port 8080
