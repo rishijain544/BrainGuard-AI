@@ -275,11 +275,15 @@ class ModelManager:
         self.segmenter : Optional[TumorSegmenter] = None
 
     def load_all(self):
-        for name, path in [
-            ('cnn',    CNN_MODEL_PATH),
-            ('resnet', RESNET_MODEL_PATH),
-            ('vit',    VIT_MODEL_PATH),
-        ]:
+        # On Railway's 500MB free tier, loading ResNet + ViT + CNN will cause an OOM crash (502 Bad Gateway)
+        # So we only load the lightweight CNN if we detect we are on Railway
+        models_to_load = [('cnn', CNN_MODEL_PATH)]
+        
+        if not os.getenv('RAILWAY_ENVIRONMENT'):
+            models_to_load.append(('resnet', RESNET_MODEL_PATH))
+            models_to_load.append(('vit', VIT_MODEL_PATH))
+            
+        for name, path in models_to_load:
             try:
                 self._load_one(name, path)
             except Exception as e:
@@ -302,7 +306,7 @@ class ModelManager:
 
     @property
     def ready(self) -> bool:
-        return len(self.models) >= 2
+        return len(self.models) >= 1
 
     def _load_one(self, name: str, path: str):
         logger.info(f"Loading {name} from {path} ...")
