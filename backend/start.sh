@@ -8,4 +8,4 @@ echo "Checking model files..."
 python download_models.py
 
 echo "Starting FastAPI server on port ${PORT:-8000}..."
-exec uvicorn fastapi_backend:app --host "::" --port ${PORT:-8000}
+exec uvicorn fastapi_backend:app --host 0.0.0.0 --port ${PORT:-8000}
