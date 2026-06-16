@@ -24,6 +24,8 @@ RUN python download_models.py
 
 # Set environment variables
 ENV RAILWAY_ENVIRONMENT=production
+ENV PORT=8080
+EXPOSE 8080
 
 # Use startup script which verifies models then starts uvicorn
 CMD ["sh", "start.sh"]
