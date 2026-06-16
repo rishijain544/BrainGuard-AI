@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: brainguard-ai-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /docs
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: RENDER_ENVIRONMENT
+        value: production
