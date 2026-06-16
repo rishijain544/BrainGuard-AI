@@ -275,13 +275,12 @@ class ModelManager:
         self.segmenter : Optional[TumorSegmenter] = None
 
     def load_all(self):
-        # On Railway's 500MB free tier, loading ResNet + ViT + CNN will cause an OOM crash (502 Bad Gateway)
-        # So we only load the lightweight CNN if we detect we are on Railway
-        models_to_load = [('cnn', CNN_MODEL_PATH)]
-        
-        if not os.getenv('RAILWAY_ENVIRONMENT'):
-            models_to_load.append(('resnet', RESNET_MODEL_PATH))
-            models_to_load.append(('vit', VIT_MODEL_PATH))
+        # We load all models to ensure perfect prediction on CNN, ResNet50, and ViT
+        models_to_load = [
+            ('cnn', CNN_MODEL_PATH),
+            ('resnet', RESNET_MODEL_PATH),
+            ('vit', VIT_MODEL_PATH)
+        ]
             
         for name, path in models_to_load:
             try:
@@ -338,6 +337,10 @@ class ModelManager:
         arch.load_state_dict(state, strict=False)
         arch.to(DEVICE)
         arch.eval()
+
+        if name in ['resnet', 'vit']:
+            for param in arch.parameters():
+                param.requires_grad = False
 
         self.models[name]    = arch
         self.load_time[name] = datetime.now().isoformat()
