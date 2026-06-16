@@ -111,15 +111,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('file', selectedFile);
 
+            // Hugging Face Spaces go to sleep after 48 hours of inactivity.
+            // If it takes more than 5 seconds, change the text so the user knows it's waking up.
+            const wakeUpTimer = setTimeout(() => {
+                if(btnText) btnText.textContent = 'Waking up AI servers... (this takes ~2 mins)';
+            }, 5000);
+
             try {
                 const res = await fetch(`${apiBaseUrl}/predict`, { method: 'POST', body: formData });
-                if (!res.ok) throw new Error('Analysis failed.');
+                clearTimeout(wakeUpTimer);
+                
+                if (!res.ok) {
+                    if (res.status === 503 || res.status === 504) {
+                        throw new Error('Server is currently starting up. Please try again in 1 minute.');
+                    }
+                    throw new Error('Analysis failed.');
+                }
                 const data = await res.json();
                 
                 displayResults(data);
                 addToHistory(data);
                 
             } catch (err) {
+                clearTimeout(wakeUpTimer);
                 console.error(err);
                 alert(`Error: ${err.message}`);
             } finally {
