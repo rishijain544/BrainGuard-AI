@@ -334,7 +334,9 @@ class ModelManager:
             logger.info(f"  direct state_dict")
 
         arch = self._build_arch(name, state)
-        arch.load_state_dict(state, strict=False)
+        # assign=True is CRITICAL: it binds the memory-mapped weights directly to the model 
+        # without copying them into RAM, saving ~50% of the model's memory footprint!
+        arch.load_state_dict(state, strict=False, assign=True)
         arch.to(DEVICE)
         arch.eval()
 
@@ -402,6 +404,12 @@ class EnsemblePredictor:
                 del model
                 import gc
                 gc.collect()
+                # Force OS to reclaim memory (gc.collect only reclaims to Python allocator)
+                import ctypes
+                try:
+                    ctypes.CDLL('libc.so.6').malloc_trim(0)
+                except Exception:
+                    pass
             except Exception as e:
                 logger.error(f"Failed to run {name}: {e}")
 
@@ -459,6 +467,11 @@ def compute_gradcam(manager: ModelManager,
         del model
         import gc as garbage_collector
         garbage_collector.collect()
+        import ctypes
+        try:
+            ctypes.CDLL('libc.so.6').malloc_trim(0)
+        except Exception:
+            pass
         
         return make_overlay(image_rgb, cam)
     except Exception as e:
@@ -578,6 +591,11 @@ async def predict(file: UploadFile = File(...)):
         del segmenter
         import gc
         gc.collect()
+        import ctypes
+        try:
+            ctypes.CDLL('libc.so.6').malloc_trim(0)
+        except Exception:
+            pass
     except Exception as e:
         logger.warning(f"Segmentation failed: {e}")
 
@@ -706,6 +724,9 @@ if os.path.exists(PUBLIC_DIR):
     app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="public")
 else:
     logger.warning(f"Static public directory NOT found at: {PUBLIC_DIR}. Make sure it is created.")
+    @app.get("/")
+    async def root():
+        return {"status": "ok", "message": "BrainGuard AI Backend is running"}
 
 
 if __name__ == '__main__':
