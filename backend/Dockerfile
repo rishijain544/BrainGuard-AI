@@ -15,17 +15,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ .
 
-# Make startup script executable
-RUN chmod +x start.sh
-
 # Download actual model files (replaces LFS pointers with real data)
-# This runs at BUILD TIME so models are baked into the image
 RUN python download_models.py
 
-# Set environment variables
-ENV RAILWAY_ENVIRONMENT=production
+# HF Spaces uses port 7860 by default
+ENV PORT=7860
+EXPOSE 7860
 
-EXPOSE $PORT
-
-# Use startup script which verifies models then starts uvicorn
-CMD ["sh", "start.sh"]
+# Start the FastAPI server
+CMD ["sh", "-c", "python download_models.py && uvicorn fastapi_backend:app --host 0.0.0.0 --port 7860"]

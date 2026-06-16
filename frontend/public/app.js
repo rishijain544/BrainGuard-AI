@@ -1,8 +1,8 @@
 // API Base configuration
-// In production, this can be dynamically overridden or hardcoded to the Render URL.
+// In production, points to Hugging Face Spaces backend.
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:8000' 
-    : 'https://brainguard-ai-production.up.railway.app';
+    : 'https://rjking34-brainguard-ai.hf.space';
 
 /* BrainGuard AI - Complete Refactored Logic */
 
