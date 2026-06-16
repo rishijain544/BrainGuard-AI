@@ -17,7 +17,7 @@ import numpy as np
 import cv2
 
 # Import custom modules
-from segmentation import TumorSegmenter, make_overlay
+from segmentation import TumorSegmenter
 
 # ============================================================
 # CONFIGURATION
@@ -173,6 +173,17 @@ class EnsemblePredictor:
         }
 
 ensemble_predictor = EnsemblePredictor(model_manager)
+
+def make_overlay(image_rgb: np.ndarray, cam: np.ndarray, alpha: float = 0.45) -> str:
+    heatmap = cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET)
+    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+    img_u8  = image_rgb.astype(np.uint8)
+    overlay = cv2.addWeighted(img_u8, 1 - alpha, heatmap, alpha, 0)
+    pil_img = Image.fromarray(overlay)
+    buf     = io.BytesIO()
+    pil_img.save(buf, format='PNG')
+    b64     = base64.b64encode(buf.getvalue()).decode('utf-8')
+    return f"data:image/png;base64,{b64}"
 
 def generate_heatmap(image: Image.Image, pred_class: str) -> str:
     try:
