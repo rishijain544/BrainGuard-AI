@@ -261,6 +261,7 @@ class HealthResponse(BaseModel):
     models_loaded: List[str]
     device:        str
     timestamp:     str
+    errors:        Optional[Dict[str, str]] = None
 
 
 # ============================================================
@@ -272,6 +273,7 @@ class ModelManager:
     def __init__(self):
         self.models    : Dict[str, nn.Module] = {}
         self.load_time : Dict[str, str]       = {}
+        self.errors    : Dict[str, str]       = {}
         self.segmenter : Optional[TumorSegmenter] = None
 
     def load_all(self):
@@ -287,6 +289,7 @@ class ModelManager:
                 self._load_one(name, path)
             except Exception as e:
                 logger.warning(f"Could not load {name}: {e}")
+                self.errors[name] = str(e)
                 
         try:
             logger.info(f"Loading segmentation from {SEGMENTATION_MODEL_PATH} ...")
@@ -295,6 +298,7 @@ class ModelManager:
             self.load_time['segmentation'] = f"{time.time()-t0:.2f}s"
         except Exception as e:
             logger.warning(f"Could not load segmentation model: {e}")
+            self.errors['segmentation'] = str(e)
             
         return list(self.models.keys())
 
@@ -493,6 +497,7 @@ async def health():
         models_loaded = list(model_manager.models.keys()),
         device        = str(DEVICE),
         timestamp     = datetime.now().isoformat(),
+        errors        = model_manager.errors
     )
 
 
