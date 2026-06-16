@@ -9,11 +9,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python packages
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
-COPY . .
+COPY backend/ .
 
 # Set environment variables
 ENV RAILWAY_ENVIRONMENT=production
