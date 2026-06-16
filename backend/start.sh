@@ -7,5 +7,5 @@ echo "=== BrainGuard AI Startup ==="
 echo "Checking model files..."
 python download_models.py
 
-echo "Starting Flask server on port 8080..."
-exec gunicorn --bind 0.0.0.0:8080 --workers 1 --timeout 120 flask_backend:app
+echo "Starting FastAPI server on port 8080..."
+exec uvicorn fastapi_backend:app --host 0.0.0.0 --port 8080
