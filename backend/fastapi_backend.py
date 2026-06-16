@@ -518,9 +518,17 @@ async def shutdown():
 
 @app.get('/health', response_model=HealthResponse)
 async def health():
+    # Show which model files exist and their sizes
+    model_files_info = []
+    for name, path in [('cnn', CNN_MODEL_PATH), ('resnet', RESNET_MODEL_PATH), 
+                        ('vit', VIT_MODEL_PATH), ('segmentation', SEGMENTATION_MODEL_PATH)]:
+        if os.path.exists(path):
+            size_mb = os.path.getsize(path) / (1024 * 1024)
+            model_files_info.append(f"{name}({size_mb:.1f}MB)")
+    
     return HealthResponse(
         status        = 'ok' if model_manager.ready else 'no_models',
-        models_loaded = list(model_manager.models.keys()),
+        models_loaded = model_files_info,
         device        = str(DEVICE),
         timestamp     = datetime.now().isoformat(),
         errors        = model_manager.errors
