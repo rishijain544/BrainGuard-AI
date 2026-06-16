@@ -1,8 +1,8 @@
 // API Base configuration
-// In production, this can be dynamically overridden or hardcoded to the Railway URL.
+// In production, this can be dynamically overridden or hardcoded to the Render URL.
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:8000' 
-    : 'https://brainguard-ai-production.up.railway.app';
+    : 'https://brainguard-ai-backend.onrender.com';
 
 /* BrainGuard AI - Complete Refactored Logic */
 
