@@ -131,9 +131,7 @@ class EnsemblePredictor:
         t_img = self.transform(image).unsqueeze(0).to(DEVICE)
         
         models_to_run = [
-            ('cnn', CNN_MODEL_PATH),
-            ('resnet', RESNET_MODEL_PATH),
-            ('vit', VIT_MODEL_PATH)
+            ('cnn', CNN_MODEL_PATH)
         ]
         
         preds = []
@@ -257,13 +255,13 @@ def predict():
         # 2. Grad-CAM Heatmap
         heatmap_b64 = generate_heatmap(image, tumor_type)
         
-        # 3. Segmentation (only if tumor detected)
+        # 3. Segmentation (disabled to save RAM on Railway Free Tier)
         mask_b64 = ""
         tumor_area = 0.0
         
-        if tumor_type != "notumor":
-            try:
-                segmenter = TumorSegmenter(SEGMENTATION_MODEL_PATH, device=str(DEVICE))
+        # if tumor_type != "notumor":
+        #     try:
+        #         segmenter = TumorSegmenter(SEGMENTATION_MODEL_PATH, device=str(DEVICE))
                 mask, area = segmenter.segment(image_np)
                 
                 mask_uint8 = (mask * 255).astype(np.uint8)
