@@ -317,7 +317,8 @@ class ModelManager:
         if not os.path.exists(path):
             raise FileNotFoundError(f"Not found: {path}")
 
-        ckpt = torch.load(path, map_location=DEVICE, weights_only=False)
+        # Use memory mapping to avoid RAM spikes on free tiers
+        ckpt = torch.load(path, map_location=DEVICE, weights_only=False, mmap=True)
 
         # Handle all possible save formats
         if isinstance(ckpt, dict):

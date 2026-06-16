@@ -229,8 +229,8 @@ class TumorSegmenter:
         self.device = torch.device(device)
         self.model = AttentionUNet().to(self.device)
         
-        # Load weights
-        checkpoint = torch.load(model_path, map_location=self.device)
+        # Load weights with memory mapping for free tiers
+        checkpoint = torch.load(model_path, map_location=self.device, weights_only=False, mmap=True)
         if isinstance(checkpoint, dict) and 'model_state' in checkpoint:
             self.model.load_state_dict(checkpoint['model_state'])
         else:
