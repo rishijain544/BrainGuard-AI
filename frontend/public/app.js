@@ -8,7 +8,7 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const apiBaseUrl = localStorage.getItem('brainguard_api_url') || 'http://localhost:8000';
+    const apiBaseUrl = localStorage.getItem('brainguard_api_url') || API_BASE;
     const STORAGE_KEY = 'brainguard_scan_history';
     let chartInstances = {};
 
