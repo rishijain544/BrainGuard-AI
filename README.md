@@ -36,6 +36,25 @@ Furthermore, the platform provides rich Explainable AI (XAI) features, ensuring 
 
 ---
 
+## 📸 Application Screenshots
+
+### Scan Upload & Prediction Dashboard
+![Dashboard](frontend/public/assets/dashboard.png)
+
+### Advanced Analytics Dashboard
+![Analytics Dashboard](frontend/public/assets/analytics.png)
+
+### Automated Clinical Report Generation
+![Clinical Report](frontend/public/assets/report.png)
+
+### Scan View & Lesion Localization
+![Scan View](frontend/public/assets/scan_view.png)
+
+### Patient History Records
+![Patient History](frontend/public/assets/history.png)
+
+---
+
 ## 📊 Exploratory Data Analysis (EDA)
 
 Before modeling, an exhaustive EDA phase was conducted to understand the underlying distributions and challenges within the MRI dataset. Key findings and preprocessing steps included:
