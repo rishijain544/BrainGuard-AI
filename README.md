@@ -90,7 +90,7 @@ Medical AI must be transparent. BrainGuard AI provides medical professionals wit
 - PyTorch & Torchvision (Deep Learning inference)
 - OpenCV, Pillow, Scikit-learn (Image processing and data handling)
 - **Docker** (Containerized for consistent production environments)
-- **Railway / Render** (Cloud execution of the PyTorch ML containers)
+- **Hugging Face Spaces** (Cloud execution of the PyTorch ML containers utilizing 16GB RAM)
 
 ---
 
